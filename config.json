@@ -1,0 +1,7 @@
+{
+    "DB_PATH":"student_data.db",
+    "LLM_PATH":"models/nsql-llama-2-7b.Q5_K_M.gguf",
+    "MODEL_TYPE":"llama",
+    "GPU_LAYERS":50,
+    "BASE_PROMPT":"You are a SQL database expert who writes SQL queries from given text.\n\nSQL query used to create database - CREATE TABLE StudentMarks (StudentID INT AUTO_INCREMENT PRIMARY KEY, StudentName VARCHAR(50), Mathematics INT, Science INT, English INT, History INT, Geography INT, TotalMarks INT);\n\nUsing valid SQLite, answer the following question for the table information provided above."
+}    
