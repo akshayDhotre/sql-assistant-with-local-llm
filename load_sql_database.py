@@ -6,14 +6,15 @@ July 2024
 """
 
 import sqlite3
+import pandas as pd
 
 
 def get_database_connection(db_file_name:str)->object:
     """
     Get database connection
     """
-    connection = sqlite3.connect(db_file_name)
-    return connection, connection.cursor()
+    db_connection = sqlite3.connect(db_file_name)
+    return db_connection, db_connection.cursor()
 
 def create_table(db_cursor:object, db_create_query:str)->None:
     """
@@ -57,54 +58,79 @@ def close_db_connection(db_connection:object)->None:
 
 if __name__=="__main__":
 
-    db_connection, db_cursor = get_database_connection('student_data.db')
+    connection, cursor = get_database_connection('students_data_multi_table.db')
 
-    # Create table
-    # TABLE_INFO = """
-    # Create table STUDENT(NAME VARCHAR(25),CLASS VARCHAR(25),
-    # SECTION VARCHAR(25),MARKS INT);
-    # """
+    # Table Schema
+    STUDENTS = '''CREATE TABLE Students (
+        StudentID INTEGER PRIMARY KEY,
+        Name TEXT,
+        Age INTEGER,
+        Gender TEXT
+    );'''
 
-    TABLE_INFO = """
-    CREATE TABLE StudentMarks 
-    (StudentID INT AUTO_INCREMENT PRIMARY KEY,
-    StudentName VARCHAR(50),
-    Mathematics INT,
-    Science INT,
-    English INT,
-    History INT,
-    Geography INT,
-    TotalMarks INT);
-    """
+    MARKS = '''CREATE TABLE Marks (
+        StudentID INTEGER,
+        Math INTEGER,
+        Science INTEGER,
+        English INTEGER,
+        History INTEGER,
+        Geography INTEGER,
+        FOREIGN KEY (StudentID) REFERENCES Students(StudentID)
+    );'''
 
-    create_table(db_cursor, TABLE_INFO)
+    ATTENDANCE = '''CREATE TABLE IF NOT EXISTS Attendance (
+        StudentID INTEGER,
+        TotalClasses INTEGER,
+        ClassesAttended INTEGER,
+        AttendancePercentage REAL,
+        FOREIGN KEY (StudentID) REFERENCES Students(StudentID)
+    );'''
+    
+    # Query the Students table
+    students_df = pd.read_sql_query("SELECT * FROM Students", connection)
+    print("Students Table:")
+    print(students_df.head())
 
-    # Insert records
-    # insert_query_list = [
-    #     '''Insert Into STUDENT values('Akshay','Data Science','A',90)''',
-    #     '''Insert Into STUDENT values('Rohit','Industrial Automation','B',100)''',
-    #     '''Insert Into STUDENT values('Snehal','Software Testing','A',86)''',
-    #     '''Insert Into STUDENT values('Adinath','Electricals','A',50)''',
-    #     '''Insert Into STUDENT values('Shree','IT','A',35)''',
-    # ]
+    # Query the Marks table
+    marks_df = pd.read_sql_query("SELECT * FROM Marks", connection)
+    print("\nMarks Table:")
+    print(marks_df.head())
 
-    insert_query_list = [
-        '''INSERT INTO StudentMarks (StudentID, StudentName, Mathematics, Science, English, History, Geography, TotalMarks)
-            VALUES 
-                (1, 'John Doe', 85, 90, 75, 80, 70, 400),
-                (2, 'Jane Smith', 78, 85, 88, 90, 75, 416),
-                (3, 'Alice Johnson', 92, 87, 80, 85, 88, 432),
-                (4, 'Robert Brown', 75, 80, 70, 78, 82, 385),
-                (5, 'Emily Davis', 88, 92, 85, 89, 90, 444);'''
-        ]
+    # Query the Attendance table
+    attendance_df = pd.read_sql_query("SELECT * FROM Attendance", connection)
+    print("\nAttendance Table:")
+    print(attendance_df.head())
 
-    execute_queries(db_cursor, insert_query_list)
+    # Insert data into Students table
+    cursor.execute('''
+    INSERT INTO Students (StudentID, Name, Age, Gender)
+    VALUES (?, ?, ?, ?)
+    ''', (51, 'New_Student', 20, 'Male'))
 
-    commit_db_changes(db_connection)
+    # Insert data into Marks table
+    cursor.execute('''
+    INSERT INTO Marks (StudentID, Math, Science, English, History, Geography)
+    VALUES (?, ?, ?, ?, ?, ?)
+    ''', (51, 85, 90, 75, 80, 70))
 
-    # Display all records
-    SELECT_QUERY = """select * from StudentMarks"""
-    query_response = execute_query(db_cursor, SELECT_QUERY)
-    print(f"Records Inserted: {[row for row in query_response]}")
+    # Insert data into Attendance table
+    cursor.execute('''
+    INSERT INTO Attendance (StudentID, TotalClasses, ClassesAttended, AttendancePercentage)
+    VALUES (?, ?, ?, ?)
+    ''', (51, 100, 85, (85.0 / 100.0) * 100))
 
-    close_db_connection(db_connection)
+    # Commit data
+    connection.commit()
+
+    # Query to database with custom select query
+    SELECT_QUERY = '''SELECT T2.Name, T1.Math
+                        FROM Marks AS T1 JOIN Students AS T2 ON T1.StudentID = T2.StudentID 
+                        WHERE T2.Name IN 
+                        (SELECT T4.Name 
+                        FROM Attendance AS T3 JOIN Students AS T4 ON T3.StudentID = T4.StudentID 
+                        ORDER BY T3.AttendancePercentage DESC LIMIT 5)'''
+    query_response = execute_query(cursor, SELECT_QUERY)
+
+    print('Custom query response:\n '+ str(list(query_response)))
+
+    close_db_connection(connection)

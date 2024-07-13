@@ -69,5 +69,8 @@ This repository contains a Streamlit-based application that allows users to inte
 5. The SQL response will be displayed in a formatted manner in the "Response Output" box.
 
 
+## Update
+- 13 July 2024: added multi table sample database and support for related queries.
+
 ## License
 This project is licensed under the MIT License.

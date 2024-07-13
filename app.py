@@ -16,7 +16,38 @@ LLM_PATH = config["LLM_PATH"]
 MODEL_TYPE = config["MODEL_TYPE"]
 GPU_LAYERS = config["GPU_LAYERS"]
 DB_PATH = config["DB_PATH"]
-BASE_PROMPT = config["BASE_PROMPT"]
+
+# Database table details
+STUDENTS = '''CREATE TABLE Students (
+    StudentID INTEGER PRIMARY KEY,
+    Name TEXT,
+    Age INTEGER,
+    Gender TEXT
+);
+'''
+
+MARKS = '''CREATE TABLE Marks (
+    StudentID INTEGER,
+    Math INTEGER,
+    Science INTEGER,
+    English INTEGER,
+    History INTEGER,
+    Geography INTEGER,
+    
+    FOREIGN KEY (StudentID) REFERENCES Students(StudentID)
+);
+'''
+
+ATTENDANCE = '''CREATE TABLE Attendance (
+    StudentID INTEGER,
+    TotalClasses INTEGER,
+    ClassesAttended INTEGER,
+    AttendancePercentage REAL,
+    FOREIGN KEY (StudentID) REFERENCES Students(StudentID)
+);
+'''
+
+TABLES_INFO = STUDENTS + '\n' + MARKS + '\n' + ATTENDANCE
 
 # Load LLM model
 llm_model = load_llm_model.get_llm_model(model_path=LLM_PATH,
@@ -39,8 +70,9 @@ submit=st.button("Submit")
 
 # if submit is clicked get response from llm and displayon the screen
 if submit:
-    llm_prompt, llm_response=load_llm_model.get_response_from_llm_model(llm_model=llm_model,
-                                                        base_prompt=BASE_PROMPT,
+    llm_prompt, llm_response=load_llm_model.get_response_from_llm_model(
+                                                        llm_model=llm_model,
+                                                        table_schema=TABLES_INFO,
                                                         question=question)
 
     print(f'LLM Response - \n {llm_response}')
