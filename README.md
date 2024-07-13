@@ -21,6 +21,10 @@ This repository contains a Streamlit-based application that allows users to inte
 - I am using GGUF based model with ctransformers library.
 - Hugging Face Model card - [TheBloke/nsql-llama-2-7B-GGUF](https://huggingface.co/TheBloke/nsql-llama-2-7B-GGUF)
 - Model Download Link - [Download Link](https://huggingface.co/TheBloke/nsql-llama-2-7B-GGUF/blob/main/nsql-llama-2-7b.Q5_K_M.gguf)
+#### Update
+ - Tried new model from HF - [omeryentur/phi-3-sql](https://huggingface.co/omeryentur/phi-3-sql)
+ - Model download Link - [Download Link](https://huggingface.co/omeryentur/phi-3-sql/resolve/main/phi-3-sql.Q4_K_M.gguf?download=true)
+
 
 ### Setup
 

@@ -1,6 +1,6 @@
 {
     "DB_PATH":"students_data_multi_table.db",
-    "LLM_PATH":"models/nsql-llama-2-7b.Q5_K_M.gguf",
-    "MODEL_TYPE":"llama",
+    "LLM_PATH":"models/phi-3-sql.Q4_K_M.gguf",
+    "MODEL_TYPE":"mistral",
     "GPU_LAYERS":30
 }    

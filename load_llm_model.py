@@ -8,9 +8,10 @@ def get_llm_model(model_path:str, model_type:str, gpu_layers:int)->object:
     """
     Load llm model
     """
-    llm_model = AutoModelForCausalLM.from_pretrained(model_path, 
-                                               model_type=model_type, 
-                                               gpu_layers=gpu_layers)
+    llm_model = AutoModelForCausalLM.from_pretrained(model_path,
+                                               model_type=model_type,
+                                               gpu_layers=gpu_layers,
+                                               temperature=0.1)
     return llm_model
 
 def get_response_from_llm_model(llm_model:object, table_schema:str, question:str)->str:
@@ -19,27 +20,24 @@ def get_response_from_llm_model(llm_model:object, table_schema:str, question:str
     """
 
     prompt = f'''
-    ## Task
-    You are a SQL database expert who writes SQL queries from given natural language text.
-    Using valid SQLite, answer the following question for the table information provided below.
+    You are a professional SQL developer. Understand the question and return the most suitable query.
+    Using valid SQLite syntax, answer the question for the table information provided below.
 
-    ### Database Schema
-    This query will run on a database whose schema is represented in this string:
+    ### Database Tables Schema
     `{table_schema}`
 
-    ### SQL
-    Given the database schema, here is the SQL query that answers question: `{question}`.
+    Given the table structure from database, provide SQL query to question: `{question}`.
     
-    Query:
+    SQL query:
     '''
     print(f'Prompt to LLM - \n {prompt}')
     response = llm_model(prompt=prompt)
     return prompt, response
 
 if __name__=="__main__":
-    MODEL_PATH = "models/nsql-llama-2-7b.Q5_K_M.gguf"
-    MODEL_TYPE = 'llama'
-    GPU_LAYERS = 50
+    MODEL_PATH = 'models/phi-3-sql.Q4_K_M.gguf'
+    MODEL_TYPE = 'mistral'
+    GPU_LAYERS = 30
 
     STUDENTS = '''CREATE TABLE Students (
         StudentID INTEGER PRIMARY KEY,
@@ -72,8 +70,7 @@ if __name__=="__main__":
 
     TABLES_INFO = STUDENTS + '\n' + MARKS + '\n' + ATTENDANCE
 
-    USER_QUERY = '''From students attendence find top 5 students with 
-                    highest attendance and give me their marks in math.'''
+    USER_QUERY = '''From students attendence find top 5 students with highest attendance and give me their marks in math.'''
 
     llm = get_llm_model(model_path=MODEL_PATH, model_type=MODEL_TYPE, gpu_layers=GPU_LAYERS)
 
