@@ -1,0 +1,30 @@
+# SQL Assistant Configuration
+# This file contains all configuration settings for the SQL Assistant application
+
+# LLM Model Configuration (Using Ollama)
+llm:
+  # Ollama service base URL (change if running on different host/port)
+  base_url: "http://localhost:11434"
+  # Model name as available in Ollama (pull models with: ollama pull <model_name>)
+  # Recommended models: phi, neural-chat, mistral, llama2, llama3:latest
+  model_name: "llama3:latest"
+database:
+  path: "students_data_multi_table.db"
+  type: "sqlite"
+
+# Security Configuration
+security:
+  max_queries_per_minute: 100
+  max_result_rows: 10000
+  enable_guardrails: true
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  file: "logs/app.log"
+
+# API Configuration
+api:
+  host: "localhost"
+  port: 8501
+  debug: false
