@@ -1,0 +1,27 @@
+"""
+Sample evaluation dataset for SQL generation testing.
+
+This file contains test cases for evaluating the SQL generation capability
+of the LLM-based SQL assistant.
+"""
+
+[
+    {
+        "id": 1,
+        "question": "From students attendance find top 5 students with highest attendance and give me their marks in math.",
+        "expected_query": "SELECT T2.Name, T1.Math FROM Marks AS T1 JOIN Students AS T2 ON T1.StudentID = T2.StudentID WHERE T2.Name IN (SELECT T4.Name FROM Attendance AS T3 JOIN Students AS T4 ON T3.StudentID = T4.StudentID ORDER BY T3.AttendancePercentage DESC LIMIT 5)",
+        "expected_columns": ["Name", "Math"]
+    },
+    {
+        "id": 2,
+        "question": "Show me all students with their math marks.",
+        "expected_query": "SELECT s.Name, m.Math FROM Students s JOIN Marks m ON s.StudentID = m.StudentID",
+        "expected_columns": ["Name", "Math"]
+    },
+    {
+        "id": 3,
+        "question": "List all students with their names and age.",
+        "expected_query": "SELECT Name, Age FROM Students",
+        "expected_columns": ["Name", "Age"]
+    }
+]

@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  sql-assistant:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sql-assistant
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./models:/app/models
+      - ./logs:/app/logs
+      - ./data:/app/data
+    environment:
+      - STREAMLIT_SERVER_PORT=8501
+      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+      - PYTHONUNBUFFERED=1
+    command: streamlit run app.py
+    networks:
+      - sql-network
+
+  # Optional: SQLite database service for persistence
+  db:
+    image: alpine
+    container_name: sql-assistant-db
+    volumes:
+      - ./data:/data
+    networks:
+      - sql-network
+
+networks:
+  sql-network:
+    driver: bridge
