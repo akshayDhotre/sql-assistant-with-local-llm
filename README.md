@@ -198,6 +198,37 @@ llm:
   base_url: "http://localhost:11434"
   model_name: "phi"
   temperature: 0.1
+  # Intelligent retry for unreliable models
+  max_retries: 3  # Retry generating SQL up to 3 times if invalid
+  # AI-powered result insights
+  enable_result_formatting: false  # Set to true for AI summaries (slower)
+```
+
+### Configuration Presets
+
+**Fast & Simple** (for quick queries):
+```yaml
+llm:
+  max_retries: 1
+  enable_result_formatting: false
+  model_name: "phi"
+```
+
+**Balanced** (recommended, good reliability):
+```yaml
+llm:
+  max_retries: 3
+  enable_result_formatting: false
+  model_name: "sqlcoder:7b"
+```
+
+**Maximum Reliability** (for critical queries):
+```yaml
+llm:
+  max_retries: 5
+  enable_result_formatting: true
+  model_name: "llama3:latest"
+```
 
 database:
   path: "students_data_multi_table.db"
@@ -208,6 +239,27 @@ security:
   max_result_rows: 10000
   enable_guardrails: true
 ```
+
+## Advanced Features
+
+### 🔄 Intelligent Retry Logic
+When the LLM generates invalid SQL, the system automatically retries to create valid SQL:
+- **Automatic**: No user action needed
+- **Configurable**: Set `max_retries` (default: 3)
+- **Smart**: Validates both syntax and security on each attempt
+- **Transparent**: User sees "Attempt 1/3", "Attempt 2/3" messages
+
+**Example**: If the first attempt fails due to syntax error, the system automatically tries again. Only successful results are displayed.
+
+### 📝 AI-Generated Insights
+When enabled, the system generates natural language summaries of query results:
+- **Smart Analysis**: Identifies patterns and trends in the data
+- **Contextual**: Considers the original question
+- **Optional**: Expandable section that doesn't clutter the UI
+- **Configurable**: Set `enable_result_formatting: true` in config
+
+**Example**: For "Top students by marks", might generate:
+> "Isaac Newton leads with 98 marks in math. The top 5 students consistently scored above 90 in core subjects, with attendance above 95%."
 
 ## Module Overview
 
