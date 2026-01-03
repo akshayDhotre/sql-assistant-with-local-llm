@@ -13,19 +13,23 @@ import sys
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from core.logging import get_evaluation_logger
+
 
 class EvaluationReportGenerator:
     """Generate evaluation reports in multiple formats."""
     
-    def __init__(self, output_dir: str = "evaluation_reports"):
+    def __init__(self, output_dir: str = "evaluation_reports", logger=None):
         """
         Initialize report generator.
         
         Args:
             output_dir: Directory to save reports
+            logger: Optional logger instance
         """
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
+        self.logger = logger if logger else get_evaluation_logger()
     
     def generate_json_report(
         self,
@@ -48,10 +52,15 @@ class EvaluationReportGenerator:
         
         filepath = self.output_dir / filename
         
-        with open(filepath, 'w') as f:
-            json.dump(evaluation_data, f, indent=2)
-        
-        return str(filepath)
+        try:
+            with open(filepath, 'w') as f:
+                json.dump(evaluation_data, f, indent=2)
+            
+            self.logger.info(f"✓ JSON report generated: {filepath}")
+            return str(filepath)
+        except Exception as e:
+            self.logger.error(f"✗ Failed to generate JSON report: {e}", exc_info=True)
+            raise
     
     def generate_markdown_report(
         self,
@@ -74,10 +83,15 @@ class EvaluationReportGenerator:
         
         filepath = self.output_dir / filename
         
-        with open(filepath, 'w') as f:
-            f.write(self._build_markdown_content(evaluation_data))
-        
-        return str(filepath)
+        try:
+            with open(filepath, 'w') as f:
+                f.write(self._build_markdown_content(evaluation_data))
+            
+            self.logger.info(f"✓ Markdown report generated: {filepath}")
+            return str(filepath)
+        except Exception as e:
+            self.logger.error(f"✗ Failed to generate Markdown report: {e}", exc_info=True)
+            raise
     
     def _build_markdown_content(self, evaluation_data: Dict[str, Any]) -> str:
         """Build markdown report content."""
@@ -294,16 +308,21 @@ class EvaluationReportGenerator:
                 rows.append(row)
         
         # Write CSV
-        with open(filepath, 'w') as f:
-            # Header
-            f.write(",".join(headers) + "\n")
+        try:
+            with open(filepath, 'w') as f:
+                # Header
+                f.write(",".join(headers) + "\n")
+                
+                # Data rows
+                for row in rows:
+                    row_str = ",".join(str(v) for v in row)
+                    f.write(row_str + "\n")
             
-            # Data rows
-            for row in rows:
-                row_str = ",".join(str(v) for v in row)
-                f.write(row_str + "\n")
-        
-        return str(filepath)
+            self.logger.info(f"✓ CSV report generated: {filepath}")
+            return str(filepath)
+        except Exception as e:
+            self.logger.error(f"✗ Failed to generate CSV report: {e}", exc_info=True)
+            raise
     
     def generate_all_reports(
         self,
@@ -320,10 +339,17 @@ class EvaluationReportGenerator:
         """
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
-        reports = {
-            "json": self.generate_json_report(evaluation_data, f"report_{timestamp}.json"),
-            "markdown": self.generate_markdown_report(evaluation_data, f"report_{timestamp}.md"),
-            "csv": self.generate_csv_report(evaluation_data, f"results_{timestamp}.csv"),
-        }
+        self.logger.info("\nGenerating evaluation reports...")
         
-        return reports
+        try:
+            reports = {
+                "json": self.generate_json_report(evaluation_data, f"report_{timestamp}.json"),
+                "markdown": self.generate_markdown_report(evaluation_data, f"report_{timestamp}.md"),
+                "csv": self.generate_csv_report(evaluation_data, f"results_{timestamp}.csv"),
+            }
+            
+            self.logger.info(f"✓ All reports generated successfully")
+            return reports
+        except Exception as e:
+            self.logger.error(f"✗ Error generating reports: {e}", exc_info=True)
+            raise

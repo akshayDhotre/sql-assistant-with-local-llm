@@ -252,9 +252,40 @@ llm:
   - Query sanitization
 
 ### Evaluation Module (`evaluation/`)
-- **metrics.py**: Evaluation metrics and dataset utilities
-- **run_eval.py**: Evaluation harness for testing
-- **dataset.json**: Sample test cases
+- **metrics.py**: 5 semantic evaluation metrics (exact match, token match, BLEU, F1, semantic similarity)
+- **run_eval.py**: Multi-model evaluation engine with detailed tracking
+- **evaluate_models.py**: CLI pipeline for evaluating multiple models
+- **report_generator.py**: Report generation (JSON, Markdown, CSV)
+- **dataset.json**: Sample test cases for evaluation
+
+### Core Module (`core/`)
+- **logging.py**: App-wide logging system (replaces evaluation/logger.py) for tracking all application operations
+- Dual output: Console (INFO) + File (DEBUG level)
+- Persistent timestamped log files in `app_logs/`
+- Used by evaluation and extensible for other modules
+
+## Logging & Monitoring
+
+✅ **Application-Wide Logging System**
+- Centralized logger in `core/logging.py`
+- Dual output: Console (INFO) + File (DEBUG)
+- Persistent log files with timestamps in `app_logs/`
+- Function name and line number context in detailed logs
+- All evaluation attempts tracked
+- Success and failure details captured
+
+📊 **Evaluation Reports**
+- JSON format for machine readability
+- Markdown format for human readability
+- CSV format for data analysis
+- Model comparison reports
+- Detailed metrics per test case
+
+📚 **Documentation**
+- [LOGGING_GUIDE.md](LOGGING_GUIDE.md) - Complete logging reference
+- [LOGGING_EXAMPLES.md](LOGGING_EXAMPLES.md) - Log patterns and examples
+- [LOGGING_QUICKSTART.md](LOGGING_QUICKSTART.md) - Quick start guide
+- [LOGGING_IMPLEMENTATION_SUMMARY.md](LOGGING_IMPLEMENTATION_SUMMARY.md) - Technical details
 
 ## Security Features
 

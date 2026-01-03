@@ -29,7 +29,8 @@ def run_evaluation(
     dataset: List[Dict[str, Any]],
     llm_inference_fn: Callable,
     model_name: str = "default",
-    calculate_metrics: bool = True
+    calculate_metrics: bool = True,
+    logger = None
 ) -> List[Dict[str, Any]]:
     """
     Run evaluation on generated SQL queries.
@@ -40,6 +41,7 @@ def run_evaluation(
         llm_inference_fn: Function to generate SQL from question
         model_name: Name of the model being evaluated
         calculate_metrics: Whether to calculate similarity metrics
+        logger: Optional logger instance
         
     Returns:
         List of evaluation results with metrics
@@ -47,10 +49,16 @@ def run_evaluation(
     results = []
     connection, cursor = get_database_connection(db_path)
     
+    if logger:
+        logger.info(f"Starting evaluation for model: {model_name}")
+    
     for test_case in dataset:
         question = test_case.get("question", "")
         expected_query = test_case.get("expected_query", "")
         test_id = test_case.get("id")
+        
+        if logger:
+            logger.debug(f"Evaluating test {test_id}: {question[:60]}...")
         
         # Generate query using LLM with timing
         start_time = time.time()
@@ -58,8 +66,17 @@ def run_evaluation(
             generated_query = llm_inference_fn(question)
             generation_time = time.time() - start_time
             
+            if logger:
+                logger.debug(f"Test {test_id}: Query generated in {generation_time:.3f}s")
+            
             # Validate query
             is_valid, validation_msg = validate_query(generated_query)
+            
+            if logger:
+                if is_valid:
+                    logger.debug(f"Test {test_id}: Query validation PASSED")
+                else:
+                    logger.warning(f"Test {test_id}: Query validation FAILED - {validation_msg}")
             
             # Execute query if valid
             execution_success = False
@@ -74,9 +91,16 @@ def run_evaluation(
                     execution_success = True
                     execution_time = time.time() - exec_start
                     result_rows = len(result) if isinstance(result, list) else 0
+                    
+                    if logger:
+                        logger.debug(f"Test {test_id}: Query execution SUCCESS ({execution_time:.3f}s, {result_rows} rows)")
+                
                 except Exception as e:
                     error_msg = str(e)
                     execution_time = time.time() - exec_start
+                    
+                    if logger:
+                        logger.warning(f"Test {test_id}: Query execution FAILED - {error_msg}")
             
             # Calculate similarity metrics if expected query is provided
             similarity_metrics = {}
@@ -85,6 +109,9 @@ def run_evaluation(
             if calculate_metrics and expected_query:
                 similarity_metrics = calculate_all_metrics(generated_query, expected_query)
                 sql_correctness_score = calculate_sql_correctness(execution_success, is_valid)
+                
+                if logger:
+                    logger.debug(f"Test {test_id}: Metrics - Score: {calculate_composite_score(similarity_metrics):.4f}")
             
             result_dict = {
                 "test_id": test_id,
@@ -106,8 +133,19 @@ def run_evaluation(
             
             results.append(result_dict)
             
+            if execution_success:
+                if logger:
+                    logger.info(f"✓ Test {test_id} ({model_name}): PASSED - Score: {result_dict['composite_score']:.4f}")
+            else:
+                if logger:
+                    logger.warning(f"✗ Test {test_id} ({model_name}): FAILED - {error_msg or validation_msg}")
+        
         except Exception as e:
             generation_time = time.time() - start_time
+            
+            if logger:
+                logger.error(f"Test {test_id}: Generation FAILED - {str(e)}", exc_info=True)
+            
             results.append({
                 "test_id": test_id,
                 "model": model_name,
@@ -118,6 +156,10 @@ def run_evaluation(
             })
     
     connection.close()
+    
+    if logger:
+        logger.info(f"Evaluation complete for model: {model_name}")
+    
     return results
 
 
@@ -126,6 +168,7 @@ def run_multi_model_evaluation(
     dataset: List[Dict[str, Any]],
     models: List[Dict[str, Any]],
     get_inference_fn: Callable[[str], Callable],
+    logger = None,
 ) -> Dict[str, Any]:
     """
     Run evaluation across multiple LLM models and compare results.
@@ -135,6 +178,7 @@ def run_multi_model_evaluation(
         dataset: List of test cases
         models: List of model configurations, each with 'name' and 'config' keys
         get_inference_fn: Function that takes model config and returns inference function
+        logger: Optional logger instance
         
     Returns:
         Dictionary containing results for all models and comparison summaries
@@ -142,18 +186,18 @@ def run_multi_model_evaluation(
     all_results = {}
     model_summaries = {}
     
-    print(f"\n{'='*80}")
-    print(f"Starting Multi-Model Evaluation")
-    print(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"Number of models: {len(models)}")
-    print(f"Number of test cases: {len(dataset)}")
-    print(f"{'='*80}\n")
+    if logger:
+        logger.info(f"\nStarting Multi-Model Evaluation")
+        logger.info(f"Number of models: {len(models)}")
+        logger.info(f"Number of test cases: {len(dataset)}")
     
     for model_config in models:
         model_name = model_config.get("name", "unknown")
-        print(f"\n{'─'*80}")
-        print(f"Evaluating Model: {model_name}")
-        print(f"{'─'*80}")
+        
+        if logger:
+            logger.info(f"\n{'─'*80}")
+            logger.info(f"Evaluating Model: {model_name}")
+            logger.info(f"{'─'*80}")
         
         try:
             # Get inference function for this model
@@ -165,7 +209,8 @@ def run_multi_model_evaluation(
                 dataset=dataset,
                 llm_inference_fn=inference_fn,
                 model_name=model_name,
-                calculate_metrics=True
+                calculate_metrics=True,
+                logger=logger
             )
             
             # Calculate summary
@@ -176,11 +221,20 @@ def run_multi_model_evaluation(
             all_results[model_name] = results
             model_summaries[model_name] = summary
             
-            # Print summary for this model
-            print_evaluation_summary(summary)
+            # Log summary for this model
+            if logger:
+                from core.logging import log_model_summary
+                log_model_summary(logger, model_name, summary)
+            else:
+                print_evaluation_summary(summary)
             
         except Exception as e:
-            print(f"ERROR evaluating {model_name}: {str(e)}")
+            error_msg = f"Error evaluating {model_name}: {str(e)}"
+            if logger:
+                logger.error(error_msg, exc_info=True)
+            else:
+                print(f"ERROR: {error_msg}")
+            
             model_summaries[model_name] = {
                 "model": model_name,
                 "error": str(e)
