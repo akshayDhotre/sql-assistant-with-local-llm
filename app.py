@@ -13,6 +13,8 @@ from pathlib import Path
 
 # Import modules from the reorganized structure
 from llm import get_llm_model, get_response_from_llm_model
+from llm.inference import get_result_summary
+from llm.prompts import generate_result_prompt
 from sql import get_database_connection, execute_query
 from sql.validator import validate_query
 from sql.schema_introspector import get_database_schema
@@ -279,30 +281,13 @@ def main():
                                 with st.expander("📝 AI-Generated Insights"):
                                     try:
                                         with st.spinner("Generating insights..."):
-                                            # Create a more informative summary prompt
-                                            rows_preview = rows[:10]  # Show more rows for context
+                                            # Generate prompt for LLM analysis
+                                            analysis_prompt = generate_result_prompt(col_names, rows, question)
                                             
-                                            summary_prompt = f"""Analyze these database query results and provide key insights:
-
-Original Question: {question}
-Column Names: {', '.join(col_names)}
-Number of Results: {len(rows)}
-
-Sample Data (first {min(len(rows_preview), 10)} rows):
-{chr(10).join([f"  Row {i}: " + " | ".join(f"{col}: {val}" for col, val in zip(col_names, row)) for i, row in enumerate(rows_preview, 1)])}
-{'...' + chr(10) + f'Total: {len(rows)} results' if len(rows) > 10 else ''}
-
-Provide:
-1. Key findings/patterns in the data (2-3 sentences)
-2. Any notable observations (if applicable)
-3. A brief summary of the complete result set
-
-Keep the response concise and actionable."""
-                                            
-                                            _, summary = get_response_from_llm_model(
+                                            # Get summary from LLM (simple, focused function)
+                                            summary = get_result_summary(
                                                 llm_model=llm_model,
-                                                table_schema="",
-                                                question=summary_prompt
+                                                analysis_prompt=analysis_prompt
                                             )
                                             st.markdown(summary)
                                     except Exception as e:
