@@ -7,7 +7,7 @@ llm:
   base_url: "http://localhost:11434"
   # Model name as available in Ollama (pull models with: ollama pull <model_name>)
   # Recommended models: phi, neural-chat, mistral, llama2, llama3:latest
-  model_name: "sqlcoder:7b"
+  model_name: "llama3:latest"
   # Retry configuration for invalid SQL generation
   max_retries: 3  # Maximum number of attempts to generate valid SQL
   enable_result_formatting: true  # Use LLM to format query results (slower but better)

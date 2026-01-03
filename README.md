@@ -28,15 +28,14 @@ A modern Streamlit-based SQL chatbot that converts natural language questions in
 sql_assistant/
 ├── app.py                    # Streamlit entry point
 ├── config.yaml               # Configuration (Ollama endpoint, model, DB, security)
-├── config.py                 # Configuration loader
 ├── Dockerfile                # Docker image definition
 ├── docker-compose.yml        # Docker Compose orchestration
 │
 ├── llm/                      # LLM module
 │   ├── __init__.py
 │   ├── loader.py             # Ollama client
-│   ├── prompts.py            # Prompt templates
-│   └── inference.py          # Query generation inference
+│   ├── prompts.py            # Prompt templates (SQL generation & result analysis)
+│   └── inference.py          # Query generation & result summary inference
 │
 ├── sql/                      # SQL handling module
 │   ├── __init__.py
@@ -84,10 +83,10 @@ Once Ollama is installed and running, pull a model:
 
 ```bash
 # Recommended models for SQL generation:
-ollama pull phi          # 2.7B - Fast, good quality
+ollama pull phi          # 2.7B - Fast, good quality (default)
+ollama pull mistral      # 7B - Balanced performance
 ollama pull neural-chat  # 13B - More capable
-ollama pull mistral      # 7B - Good balance
-ollama pull llama2        # 7B/13B - Capable model
+ollama pull llama2       # 7B/13B - High quality
 ```
 
 You can list installed models with:
@@ -125,11 +124,11 @@ Edit `config.yaml`:
 
 ```yaml
 llm:
-  # Ollama service endpoint (default: localhost:11434)
-  base_url: "http://localhost:11434"
-  # Model name (must be pulled via: ollama pull <model_name>)
-  model_name: "phi"
-  temperature: 0.1
+  base_url: "http://localhost:11434"      # Ollama service endpoint
+  model_name: "llama3:latest"                        # Model name (must be pulled via: ollama pull)
+  temperature: 0.1                         # Lower = more deterministic, better for SQL
+  max_retries: 3                           # Retry invalid SQL generation (1-5)
+  enable_result_formatting: false          # AI-powered result insights (slower)
 
 database:
   path: "students_data_multi_table.db"
@@ -140,15 +139,6 @@ security:
   max_result_rows: 10000
   enable_guardrails: true
 ```
-
-**Common Model Choices**:
-
-| Model | Size | Speed | Quality | Best For |
-|-------|------|-------|---------|----------|
-| phi | 2.7B | ⚡⚡⚡ | Good | SQL queries (default) |
-| neural-chat | 13B | ⚡⚡ | Better | Complex queries |
-| mistral | 7B | ⚡⚡ | Good | Balanced |
-| llama2 | 7B/13B | ⚡ | Best | Maximum quality |
 
 ### Step 5: Setup Database (optional)
 
@@ -191,22 +181,32 @@ docker run -p 8501:8501 sql-assistant
 
 ## Configuration
 
-Edit `config.yaml` to customize:
+Edit `config.yaml` to customize behavior:
 
 ```yaml
 llm:
   base_url: "http://localhost:11434"
   model_name: "phi"
   temperature: 0.1
-  # Intelligent retry for unreliable models
-  max_retries: 3  # Retry generating SQL up to 3 times if invalid
-  # AI-powered result insights
-  enable_result_formatting: false  # Set to true for AI summaries (slower)
+  max_retries: 3                    # Intelligent retry for invalid SQL
+  enable_result_formatting: false   # AI-powered result insights
 ```
+
+### Retry Logic
+When the LLM generates invalid SQL, the system automatically retries up to `max_retries` times:
+- **Automatic**: No user action needed
+- **Validates**: Both syntax and security checked on each attempt
+- **Transparent**: User sees attempt progress
+
+### Result Formatting
+When enabled (`enable_result_formatting: true`), generates natural language insights:
+- Smart analysis of patterns in results
+- Contextual summary based on original question
+- Optional expandable section in UI
 
 ### Configuration Presets
 
-**Fast & Simple** (for quick queries):
+**Fast & Simple** (quick queries):
 ```yaml
 llm:
   max_retries: 1
@@ -214,59 +214,30 @@ llm:
   model_name: "phi"
 ```
 
-**Balanced** (recommended, good reliability):
+**Balanced** (recommended):
 ```yaml
 llm:
   max_retries: 3
   enable_result_formatting: false
-  model_name: "sqlcoder:7b"
+  model_name: "mistral"
 ```
 
-**Maximum Reliability** (for critical queries):
+**Maximum Reliability** (critical queries):
 ```yaml
 llm:
   max_retries: 5
   enable_result_formatting: true
-  model_name: "llama3:latest"
+  model_name: "llama2"
 ```
-
-database:
-  path: "students_data_multi_table.db"
-  type: "sqlite"
-
-security:
-  max_queries_per_minute: 100
-  max_result_rows: 10000
-  enable_guardrails: true
-```
-
-## Advanced Features
-
-### 🔄 Intelligent Retry Logic
-When the LLM generates invalid SQL, the system automatically retries to create valid SQL:
-- **Automatic**: No user action needed
-- **Configurable**: Set `max_retries` (default: 3)
-- **Smart**: Validates both syntax and security on each attempt
-- **Transparent**: User sees "Attempt 1/3", "Attempt 2/3" messages
-
-**Example**: If the first attempt fails due to syntax error, the system automatically tries again. Only successful results are displayed.
-
-### 📝 AI-Generated Insights
-When enabled, the system generates natural language summaries of query results:
-- **Smart Analysis**: Identifies patterns and trends in the data
-- **Contextual**: Considers the original question
-- **Optional**: Expandable section that doesn't clutter the UI
-- **Configurable**: Set `enable_result_formatting: true` in config
-
-**Example**: For "Top students by marks", might generate:
-> "Isaac Newton leads with 98 marks in math. The top 5 students consistently scored above 90 in core subjects, with attendance above 95%."
 
 ## Module Overview
 
 ### LLM Module (`llm/`)
-- **loader.py**: Ollama client for connecting to Ollama service
-- **prompts.py**: Template prompts for SQL generation
-- **inference.py**: Handles query generation and LLM inference
+- **loader.py**: Ollama HTTP client for LLM service connection
+- **prompts.py**: Prompt templates for SQL generation and result analysis
+- **inference.py**: Functions for LLM inference
+  - `get_response_from_llm_model()`: Generate SQL from natural language
+  - `get_result_summary()`: Analyze and summarize query results
 
 ### SQL Module (`sql/`)
 - **executor.py**: Database connections and query execution
@@ -275,55 +246,15 @@ When enabled, the system generates natural language summaries of query results:
 - **schema_introspector.py**: Introspects database schema
 
 ### Security Module (`security/`)
-- **sql_guardrails.py**: Prevents SQL injection and dangerous queries
-  - Pattern matching for injection attempts
-  - Comment and statement splitting validation
+- **sql_guardrails.py**: SQL injection prevention and dangerous query detection
+  - Pattern-based injection detection
+  - Dangerous keyword filtering
   - Query sanitization
 
 ### Evaluation Module (`evaluation/`)
-- **metrics.py**: Evaluation metrics and dataset loading
+- **metrics.py**: Evaluation metrics and dataset utilities
 - **run_eval.py**: Evaluation harness for testing
 - **dataset.json**: Sample test cases
-
-## API Usage
-
-### Generate SQL Query
-
-```python
-from llm import get_llm_model, get_response_from_llm_model
-
-# Initialize Ollama client
-llm = get_llm_model(
-    ollama_base_url="http://localhost:11434",
-    model_name="phi"
-)
-
-# Generate SQL query
-prompt, response = get_response_from_llm_model(
-    llm_model=llm,
-    table_schema="CREATE TABLE Users...",
-    question="Get all users over 18"
-)
-```
-
-### Validate Query
-
-```python
-from sql.validator import validate_query
-from security.sql_guardrails import SQLGuardrails
-
-is_valid, msg = validate_query(query)
-is_safe, msg = SQLGuardrails.check_query_safety(query)
-```
-
-### Execute Query
-
-```python
-from sql import get_database_connection, execute_query
-
-connection, cursor = get_database_connection("database.db")
-results = execute_query(cursor, "SELECT * FROM users")
-```
 
 ## Security Features
 
@@ -394,17 +325,18 @@ python -m pytest tests/test_sql_generation.py::TestSQLValidator -v
 
 ## Models Available via Ollama
 
-### Recommended for SQL
+For SQL generation tasks, these models work well:
 
-| Model | Size | Speed | Quality | Command |
-|-------|------|-------|---------|---------|
-| phi | 2.7B | ⚡⚡⚡ | Good | `ollama pull phi` |
-| neural-chat | 13B | ⚡⚡ | Better | `ollama pull neural-chat` |
-| mistral | 7B | ⚡⚡ | Good | `ollama pull mistral` |
-| openchat | 7B | ⚡⚡ | Good | `ollama pull openchat` |
+| Model | Size | Speed | Best For |
+|-------|------|-------|----------|
+| phi | 2.7B | ⚡⚡⚡ | Fast queries (default) |
+| mistral | 7B | ⚡⚡ | Balanced performance |
+| neural-chat | 13B | ⚡⚡ | Complex queries |
+| llama2 | 7B/13B | ⚡ | Maximum quality |
 
-### More Options
-Visit [ollama library](https://ollama.ai/library) for complete model list
+Install via: `ollama pull <model_name>`
+
+Full model library: [ollama.ai/library](https://ollama.ai/library)
 
 
 ## Future Enhancements
