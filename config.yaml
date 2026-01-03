@@ -11,6 +11,33 @@ llm:
   # Retry configuration for invalid SQL generation
   max_retries: 3  # Maximum number of attempts to generate valid SQL
   enable_result_formatting: true  # Use LLM to format query results (slower but better)
+  
+  # Multiple models for evaluation and comparison
+  # Configure models to evaluate during benchmarking
+  evaluation_models:
+    - name: "phi3"
+      model_id: "phi3"
+      enabled: true
+      description: "Phi model - lightweight and fast"
+    
+    - name: "llama3"
+      model_id: "llama3:latest"
+      enabled: true
+      description: "Llama 3 - most capable model"
+    
+    - name: "SQLCoder"
+      model_id: "sqlcoder:7b"
+      enabled: false
+      description: "SQLCoder - specialized for SQL generation"
+    
+    - name: "qwen3"
+      model_id: "qwen3:8b"
+      enabled: false
+      description: "Qwen 3 - large language model with good reasoning"
+
+  # Temperature for generation (0.0 = deterministic, 1.0 = random)
+  temperature: 0.1  # Low temperature for more deterministic SQL generation
+
 database:
   path: "students_data_multi_table.db"
   type: "sqlite"

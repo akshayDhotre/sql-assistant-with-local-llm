@@ -166,3 +166,4 @@ cython_debug/
 *embeddings.csv
 models/*
 *db
+evaluation_reports/*
