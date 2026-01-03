@@ -28,7 +28,6 @@ A modern Streamlit-based SQL chatbot that converts natural language questions in
 sql_assistant/
 ├── app.py                    # Streamlit entry point
 ├── config.yaml               # Configuration (Ollama endpoint, model, DB, security)
-├── config.py                 # Configuration loader
 ├── Dockerfile                # Docker image definition
 ├── docker-compose.yml        # Docker Compose orchestration
 │
