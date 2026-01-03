@@ -39,7 +39,7 @@ llm:
   temperature: 0.1  # Low temperature for more deterministic SQL generation
 
 database:
-  path: "students_data_multi_table.db"
+  path: "data/students_data_multi_table.db"
   type: "sqlite"
 
 # Security Configuration

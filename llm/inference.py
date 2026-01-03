@@ -5,6 +5,9 @@ This module handles generating SQL queries using Ollama LLM service.
 """
 
 from .prompts import get_sql_generation_prompt
+from core.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 def get_response_from_llm_model(llm_model, table_schema: str, question: str) -> tuple:
@@ -20,9 +23,9 @@ def get_response_from_llm_model(llm_model, table_schema: str, question: str) -> 
         Tuple of (prompt, response) - the prompt sent and LLM's response
     """
     prompt = get_sql_generation_prompt(table_schema, question)
-    print(f'****\n\nPrompt to LLM - \n {prompt}\n\n****')
+    logger.info(f"Sending prompt to LLM model - \n {prompt}")
     response = llm_model(prompt=prompt)
-    print(f'****\n\nResponse from LLM - \n {response}\n\n****')
+    logger.info(f"Response from LLM - \n {response}")
     return prompt, response
 
 
@@ -39,7 +42,7 @@ def get_result_summary(llm_model, analysis_prompt: str) -> str:
     Returns:
         Summary/insights text from LLM
     """
-    print(f'****\n\nPrompt to LLM for Result Analysis - \n {analysis_prompt}\n\n****')
+    logger.info(f"Prompt to LLM for Result Analysis - \n {analysis_prompt}")
     response = llm_model(prompt=analysis_prompt)
-    print(f'****\n\nResponse from LLM for Result Analysis - \n {response}\n\n****')
+    logger.info(f"Response from LLM for Result Analysis - \n {response}")
     return response
