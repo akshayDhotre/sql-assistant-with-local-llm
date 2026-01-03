@@ -93,19 +93,19 @@ def generate_result_prompt(columns: List[str], rows: List[tuple], question: str)
     
     prompt = f"""Analyze these database query results and provide insights:
 
-Original Question: {question}
-Column Names: {', '.join(columns)}
-Number of Results: {num_rows}
+    Original Question: {question}
+    Column Names: {', '.join(columns)}
+    Number of Results: {num_rows}
 
-Data (first {min(num_rows, 10)} rows):
-{sample_data}
+    Data (first {min(num_rows, 10)} rows):
+    {sample_data}
 
-Provide concise insights:
-1. Key findings/patterns (2-3 sentences)
-2. Notable observations
-3. Brief summary
-4. Well formatted and pointwise to show on UI
+    Provide concise insights:
+    1. Key findings/patterns (2-3 sentences)
+    2. Notable observations
+    3. Brief summary
 
-Be direct and avoid obvious statements."""
+    Response should be well formatted and pointwise to show on UI
+    Be direct and avoid obvious statements."""
     
     return prompt
