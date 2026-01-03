@@ -1,27 +1,157 @@
-# SQL Assistant with Ollama
+# SQL Assistant with Local LLM
 
-A modern Streamlit-based SQL chatbot that converts natural language questions into SQL queries using Ollama LLM service. Platform-independent and easy to deploy!
+**Natural Language → SQL System**
 
-## Features
+A **secure, modular, and evaluation-driven Text-to-SQL assistant** that converts natural language questions into **validated SQL queries** using a **local LLM (Ollama)**, executes them safely on a database, and returns structured results with explanations.
 
-- **🤖 Natural Language to SQL**: Convert plain English questions to SQL queries using LLM
-- **🐳 Ollama Integration**: Uses Ollama service for model management - no manual model downloads needed
-- **🔒 Security First**: Built-in SQL injection prevention and query validation
-- **📊 Real-time Execution**: Execute generated queries and display results immediately
-- **🏗️ Modular Architecture**: Clean, well-organized codebase with separation of concerns
-- **🧪 Comprehensive Testing**: Unit tests for validation and SQL generation
-- **📦 Docker Ready**: Containerized deployment with docker-compose
-- **🌍 Platform Independent**: Works on macOS, Linux, and Windows with Ollama
+This project goes beyond a demo chatbot and focuses on **real-world concerns** like SQL safety, schema awareness, observability, evaluation, and reproducibility.
+
+## Key Features
+
+### SQL Safety & Guardrails
+
+- SELECT-only enforcement  
+- SQL injection prevention  
+- Blocking of destructive keywords (`DROP`, `DELETE`, `UPDATE`, etc.)  
+- Query sanitization and row-limit enforcement  
+
+### Schema-Aware SQL Generation
+
+- Database schema introspection  
+- Context-aware prompt construction  
+- Restricts LLM to **only valid tables and columns**
+
+### Evaluation-Driven Design
+
+- Offline evaluation harness for NL → SQL
+- Metrics:
+  - Exact match
+  - Semantic similarity
+  - Execution success rate
+  - Latency
+- Supports **multi-model benchmarking**
+
+### Interactive Streamlit UI
+
+- Natural language input
+- Generated SQL visibility toggle
+- Query execution results
+- Error explanations in plain English
+
+### Observability & Logging
+
+- Query lifecycle logging
+- Latency tracking
+- Error diagnostics
+- Configurable log levels
+
+### Testing & Reliability
+
+- Unit tests for SQL validation, guardrails, and generation
+- Structured project layout for maintainability
+
+### Dockerized Deployment
+
+- One-command setup using Docker Compose
+- Environment-agnostic execution
 
 ## What is Ollama?
 
-[Ollama](https://ollama.ai) is a powerful tool for running open-source LLMs locally. Instead of downloading large model files manually, Ollama:
+[Ollama](https://ollama.ai) is a powerful tool for running open-source LLMs locally.
+Instead of downloading large model files manually, Ollama:
 
 - Manages models automatically
 - Provides a simple API endpoint
 - Works on any platform (macOS, Linux, Windows)
 - Supports GPU acceleration where available
 - Simplifies model switching and updates
+
+## Architecture Overview
+
+```bash
+User
+ ↓
+Streamlit UI
+ ↓
+Query Understanding
+ ↓
+Schema-Aware Prompt Builder
+ ↓
+Local LLM (Ollama)
+ ↓
+SQL Validator & Guardrails
+ ↓
+Database Executor (Read-Only)
+ ↓
+Result Formatter & Explanation
+ ↓
+User
+```
+
+## Design Decisions & Tradeoffs
+
+This project was **intentionally designed as a production-oriented LLM system**, not just a proof-of-concept chatbot. Below are some key architectural decisions and the tradeoffs involved.
+
+### Local LLM vs Cloud API
+
+**Decision**: Use a local LLM (via Ollama) instead of a hosted API.
+
+- **Why**: Ensures data privacy for database queries, enables cost-efficient experimentation, and provides full control over inference and latency.
+- **Tradeoff**: Local models may be less capable than large hosted models, requiring stronger prompting, validation, and retries — which this system explicitly implements.
+
+### Explicit SQL Guardrails
+
+**Decision**: Enforce SQL safety using deterministic validation and guardrails, not just prompt instructions.
+
+- **Why**: LLMs are probabilistic and cannot be fully trusted for safety. Explicit checks prevent destructive queries regardless of model behavior and align with enterprise security expectations.
+- **Tradeoff**: Adds extra validation logic and complexity, but significantly improves reliability and trust.
+
+### Schema-Aware Prompting
+
+**Decision**: Dynamically extract and inject only relevant schema context into prompts.
+
+- **Why**: Reduces prompt noise and token usage, improves SQL accuracy, and limits the LLM to valid tables and columns.
+- **Tradeoff**: Requires additional schema introspection logic, but results in more predictable outputs.
+
+### Evaluation as a First-Class Component
+
+**Decision**: Build an offline evaluation harness separate from the UI.
+
+- **Why**: Enables reproducible benchmarking, allows comparison across models, and treats LLM behavior as something to be measured, not assumed.
+- **Tradeoff**: Slower initial development, but critical for long-term maintainability and improvement.
+
+### Modular Architecture
+
+**Decision**: Separate concerns into clear modules (LLM, SQL generation, validation, execution, evaluation).
+
+- **Why**: Improves testability and maintainability, enables future extensions (multi-DB support, API layer), and reflects real production system boundaries.
+- **Tradeoff**: More files and upfront structure, but far easier to evolve and reason about.
+
+### Streamlit UI with Decoupled Logic
+
+**Decision**: Use Streamlit for rapid interaction while keeping core logic UI-agnostic.
+
+- **Why**: Allows quick experimentation and demos while ensuring core logic can be reused in APIs or services.
+- **Tradeoff**: Streamlit is not a full frontend framework, but sufficient for exploration and validation.
+
+### AI-Assisted Coding
+
+**Decision**: Use AI coding assistants for boilerplate and refactoring, while retaining full control over architecture.
+
+- **Why**: Speeds up development and allows focus on higher-level system design and decision-making.
+- **Tradeoff**: Requires careful review and ownership of all generated code, which this project maintains.
+
+### Overall Philosophy
+
+The core philosophy of this project is to treat LLMs as **unreliable but powerful components** within a larger system — not as autonomous decision-makers.
+
+The design emphasizes:
+
+- **Safety** over blind capability
+- **Evaluation** over assumptions
+- **Deterministic controls** around probabilistic models
+
+This mirrors how LLM systems are increasingly built in real-world production environments.
 
 ## Project Structure
 
@@ -83,12 +213,11 @@ Visit [ollama.ai](https://ollama.ai) and download the installer for your platfor
 
 Once Ollama is installed and running, pull a model:
 
+Full model library: [ollama.ai/library](https://ollama.ai/library)
+
 ```bash
 # Recommended models for SQL generation:
-ollama pull phi          # 2.7B - Fast, good quality (default)
-ollama pull mistral      # 7B - Balanced performance
-ollama pull neural-chat  # 13B - More capable
-ollama pull llama2       # 7B/13B - High quality
+ollama pull llama3       # 7B/13B - High quality
 ```
 
 You can list installed models with:
@@ -106,7 +235,18 @@ ollama list
    cd sql-assistant-with-local-llm
    ```
 
-2. **Create virtual environment** (recommended):
+2. **Using uv for python project manager**
+
+   ```bash
+   uv sync
+   
+   # UV commands
+   uv run python -m your_module
+   # or
+   uv run pytest
+   ```
+
+3. **Create virtual environment** (non uv based setup):
 
    ```bash
    python -m venv venv
@@ -116,11 +256,8 @@ ollama list
    
    # On Windows:
    venv\Scripts\activate
-   ```
-
-3. **Install dependencies**:
-
-   ```bash
+   
+   # Install dependencies**:
    pip install -r requirements.txt
    ```
 
@@ -137,7 +274,7 @@ llm:
   enable_result_formatting: false          # AI-powered result insights (slower)
 
 database:
-  path: "students_data_multi_table.db"
+  path: "students_data_multi_table.db"    # SQLite database file path
   type: "sqlite"
 
 security:
@@ -185,19 +322,6 @@ docker run -p 8501:8501 sql-assistant
 
 **Note**: If using Docker, ensure Ollama is running on the host or modify the connection URL.
 
-## Configuration
-
-Edit `config.yaml` to customize behavior:
-
-```yaml
-llm:
-  base_url: "http://localhost:11434"
-  model_name: "phi"
-  temperature: 0.1
-  max_retries: 3                    # Intelligent retry for invalid SQL
-  enable_result_formatting: false   # AI-powered result insights
-```
-
 ### Retry Logic
 
 When the LLM generates invalid SQL, the system automatically retries up to `max_retries` times:
@@ -214,77 +338,9 @@ When enabled (`enable_result_formatting: true`), generates natural language insi
 - Contextual summary based on original question
 - Optional expandable section in UI
 
-### Configuration Presets
-
-**Fast & Simple** (quick queries):
-
-```yaml
-llm:
-  max_retries: 1
-  enable_result_formatting: false
-  model_name: "phi"
-```
-
-**Balanced** (recommended):
-
-```yaml
-llm:
-  max_retries: 3
-  enable_result_formatting: false
-  model_name: "mistral"
-```
-
-**Maximum Reliability** (critical queries):
-
-```yaml
-llm:
-  max_retries: 5
-  enable_result_formatting: true
-  model_name: "llama2"
-```
-
-## Module Overview
-
-### LLM Module (`llm/`)
-
-- **loader.py**: Ollama HTTP client for LLM service connection
-- **prompts.py**: Prompt templates for SQL generation and result analysis
-- **inference.py**: Functions for LLM inference
-  - `get_response_from_llm_model()`: Generate SQL from natural language
-  - `get_result_summary()`: Analyze and summarize query results
-
-### SQL Module (`sql/`)
-
-- **executor.py**: Database connections and query execution
-- **validator.py**: Query syntax and safety validation
-- **generator.py**: SQL extraction and cleaning from LLM output
-- **schema_introspector.py**: Introspects database schema
-
-### Security Module (`security/`)
-
-- **sql_guardrails.py**: SQL injection prevention and dangerous query detection
-  - Pattern-based injection detection
-  - Dangerous keyword filtering
-  - Query sanitization
-
-### Evaluation Module (`evaluation/`)
-
-- **metrics.py**: 5 semantic evaluation metrics (exact match, token match, BLEU, F1, semantic similarity)
-- **run_eval.py**: Multi-model evaluation engine with detailed tracking
-- **evaluate_models.py**: CLI pipeline for evaluating multiple models
-- **report_generator.py**: Report generation (JSON, Markdown, CSV)
-- **dataset.json**: Sample test cases for evaluation
-
-### Core Module (`core/`)
-
-- **logging.py**: App-wide logging system (replaces evaluation/logger.py) for tracking all application operations
-- Dual output: Console (INFO) + File (DEBUG level)
-- Persistent timestamped log files in `app_logs/`
-- Used by evaluation and extensible for other modules
-
 ## Logging & Monitoring
 
-✅ **Application-Wide Logging System**
+### Application-Wide Logging System
 
 - Centralized logger in `core/logging.py`
 - Dual output: Console (INFO) + File (DEBUG)
@@ -293,7 +349,7 @@ llm:
 - All evaluation attempts tracked
 - Success and failure details captured
 
-📊 **Evaluation Reports**
+### Evaluation Reports
 
 - JSON format for machine readability
 - Markdown format for human readability
@@ -303,19 +359,19 @@ llm:
 
 ## Security Features
 
-✅ **Query Validation**
+### Query Validation
 
 - Syntax checking
 - Bracket and quote matching
 - Parameter validation
 
-✅ **SQL Injection Prevention**
+### SQL Injection Prevention
 
 - Dangerous keyword detection
 - Pattern-based injection detection
 - Statement separation validation
 
-✅ **Query Restrictions**
+### Query Restrictions
 
 - SELECT-only enforcement (read-only)
 - Comment removal
@@ -375,21 +431,6 @@ python -m pytest tests/test_sql_generation.py::TestSQLValidator -v
 - Ensure GPU drivers are up-to-date
 - Close unnecessary applications
 - Adjust temperature (lower = faster, less creative)
-
-## Models Available via Ollama
-
-For SQL generation tasks, these models work well:
-
-| Model | Size | Speed | Best For |
-|-------|------|-------|----------|
-| phi | 2.7B | ⚡⚡⚡ | Fast queries (default) |
-| mistral | 7B | ⚡⚡ | Balanced performance |
-| neural-chat | 13B | ⚡⚡ | Complex queries |
-| llama2 | 7B/13B | ⚡ | Maximum quality |
-
-Install via: `ollama pull <model_name>`
-
-Full model library: [ollama.ai/library](https://ollama.ai/library)
 
 ## Future Enhancements
 
