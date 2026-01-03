@@ -16,6 +16,7 @@ A modern Streamlit-based SQL chatbot that converts natural language questions in
 ## What is Ollama?
 
 [Ollama](https://ollama.ai) is a powerful tool for running open-source LLMs locally. Instead of downloading large model files manually, Ollama:
+
 - Manages models automatically
 - Provides a simple API endpoint
 - Works on any platform (macOS, Linux, Windows)
@@ -24,7 +25,7 @@ A modern Streamlit-based SQL chatbot that converts natural language questions in
 
 ## Project Structure
 
-```
+```bash
 sql_assistant/
 ├── app.py                    # Streamlit entry point
 ├── config.yaml               # Configuration (Ollama endpoint, model, DB, security)
@@ -73,6 +74,7 @@ sql_assistant/
 ### Step 1: Install Ollama
 
 Visit [ollama.ai](https://ollama.ai) and download the installer for your platform:
+
 - **macOS**: Metal GPU support (works on Intel and Apple Silicon)
 - **Linux**: NVIDIA CUDA support (with proper drivers)
 - **Windows**: GPU support (with NVIDIA drivers)
@@ -90,6 +92,7 @@ ollama pull llama2       # 7B/13B - High quality
 ```
 
 You can list installed models with:
+
 ```bash
 ollama list
 ```
@@ -97,12 +100,14 @@ ollama list
 ### Step 3: Clone and Setup Repository
 
 1. **Clone the repository**:
+
    ```bash
    git clone <repo-url>
    cd sql-assistant-with-local-llm
    ```
 
 2. **Create virtual environment** (recommended):
+
    ```bash
    python -m venv venv
    
@@ -114,6 +119,7 @@ ollama list
    ```
 
 3. **Install dependencies**:
+
    ```bash
    pip install -r requirements.txt
    ```
@@ -193,13 +199,17 @@ llm:
 ```
 
 ### Retry Logic
+
 When the LLM generates invalid SQL, the system automatically retries up to `max_retries` times:
+
 - **Automatic**: No user action needed
 - **Validates**: Both syntax and security checked on each attempt
 - **Transparent**: User sees attempt progress
 
 ### Result Formatting
+
 When enabled (`enable_result_formatting: true`), generates natural language insights:
+
 - Smart analysis of patterns in results
 - Contextual summary based on original question
 - Optional expandable section in UI
@@ -207,6 +217,7 @@ When enabled (`enable_result_formatting: true`), generates natural language insi
 ### Configuration Presets
 
 **Fast & Simple** (quick queries):
+
 ```yaml
 llm:
   max_retries: 1
@@ -215,6 +226,7 @@ llm:
 ```
 
 **Balanced** (recommended):
+
 ```yaml
 llm:
   max_retries: 3
@@ -223,6 +235,7 @@ llm:
 ```
 
 **Maximum Reliability** (critical queries):
+
 ```yaml
 llm:
   max_retries: 5
@@ -233,6 +246,7 @@ llm:
 ## Module Overview
 
 ### LLM Module (`llm/`)
+
 - **loader.py**: Ollama HTTP client for LLM service connection
 - **prompts.py**: Prompt templates for SQL generation and result analysis
 - **inference.py**: Functions for LLM inference
@@ -240,18 +254,21 @@ llm:
   - `get_result_summary()`: Analyze and summarize query results
 
 ### SQL Module (`sql/`)
+
 - **executor.py**: Database connections and query execution
 - **validator.py**: Query syntax and safety validation
 - **generator.py**: SQL extraction and cleaning from LLM output
 - **schema_introspector.py**: Introspects database schema
 
 ### Security Module (`security/`)
+
 - **sql_guardrails.py**: SQL injection prevention and dangerous query detection
   - Pattern-based injection detection
   - Dangerous keyword filtering
   - Query sanitization
 
 ### Evaluation Module (`evaluation/`)
+
 - **metrics.py**: 5 semantic evaluation metrics (exact match, token match, BLEU, F1, semantic similarity)
 - **run_eval.py**: Multi-model evaluation engine with detailed tracking
 - **evaluate_models.py**: CLI pipeline for evaluating multiple models
@@ -259,6 +276,7 @@ llm:
 - **dataset.json**: Sample test cases for evaluation
 
 ### Core Module (`core/`)
+
 - **logging.py**: App-wide logging system (replaces evaluation/logger.py) for tracking all application operations
 - Dual output: Console (INFO) + File (DEBUG level)
 - Persistent timestamped log files in `app_logs/`
@@ -267,6 +285,7 @@ llm:
 ## Logging & Monitoring
 
 ✅ **Application-Wide Logging System**
+
 - Centralized logger in `core/logging.py`
 - Dual output: Console (INFO) + File (DEBUG)
 - Persistent log files with timestamps in `app_logs/`
@@ -275,31 +294,29 @@ llm:
 - Success and failure details captured
 
 📊 **Evaluation Reports**
+
 - JSON format for machine readability
 - Markdown format for human readability
 - CSV format for data analysis
 - Model comparison reports
 - Detailed metrics per test case
 
-📚 **Documentation**
-- [LOGGING_GUIDE.md](LOGGING_GUIDE.md) - Complete logging reference
-- [LOGGING_EXAMPLES.md](LOGGING_EXAMPLES.md) - Log patterns and examples
-- [LOGGING_QUICKSTART.md](LOGGING_QUICKSTART.md) - Quick start guide
-- [LOGGING_IMPLEMENTATION_SUMMARY.md](LOGGING_IMPLEMENTATION_SUMMARY.md) - Technical details
-
 ## Security Features
 
 ✅ **Query Validation**
+
 - Syntax checking
 - Bracket and quote matching
 - Parameter validation
 
 ✅ **SQL Injection Prevention**
+
 - Dangerous keyword detection
 - Pattern-based injection detection
 - Statement separation validation
 
 ✅ **Query Restrictions**
+
 - SELECT-only enforcement (read-only)
 - Comment removal
 - Rate limiting support
@@ -321,23 +338,27 @@ python -m pytest tests/test_sql_generation.py::TestSQLValidator -v
 ## Troubleshooting
 
 ### Ollama Service Not Available
+
 - Ensure Ollama is installed from [ollama.ai](https://ollama.ai)
 - Start Ollama service: `ollama serve`
 - Check connectivity: `curl http://localhost:11434/api/tags`
 - For remote Ollama, update `base_url` in config.yaml
 
 ### Model Not Found
+
 - List available models: `ollama list`
 - Pull model: `ollama pull phi`
 - Verify model name matches `model_name` in config.yaml
 
 ### Slow Query Generation
+
 - Try smaller model: `phi` (2.7B) instead of larger ones
 - Check Ollama memory usage
 - Enable GPU acceleration (if available)
 - Increase timeout in connection settings
 
 ### Database Connection Issues
+
 - Verify database file exists and is readable
 - Check `database.path` in config.yaml
 - Ensure SQLite is installed
@@ -349,6 +370,7 @@ python -m pytest tests/test_sql_generation.py::TestSQLValidator -v
 - **macOS (Metal)**: ~1-3 sec per query
 
 **Tips for faster performance:**
+
 - Use smaller models (phi is recommended)
 - Ensure GPU drivers are up-to-date
 - Close unnecessary applications
@@ -368,7 +390,6 @@ For SQL generation tasks, these models work well:
 Install via: `ollama pull <model_name>`
 
 Full model library: [ollama.ai/library](https://ollama.ai/library)
-
 
 ## Future Enhancements
 
@@ -406,6 +427,7 @@ This project is licensed under the MIT License - see LICENSE file for details.
 ## Support
 
 For issues and questions:
+
 - Open an issue on GitHub
 - Check existing documentation
 - Review test cases for usage examples
