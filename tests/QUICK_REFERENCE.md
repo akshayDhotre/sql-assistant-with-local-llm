@@ -19,7 +19,9 @@ python run_tests.py -l
 ## 📂 Test Files
 
 ### `tests/test_sql_generation.py` (60+ tests)
+
 **Core SQL processing**
+
 - SQL validation and safety checks
 - Query generation and parsing
 - Database execution
@@ -29,6 +31,7 @@ python run_tests.py -l
 Run: `python run_tests.py -f test_sql_generation.py`
 
 **Key Test Classes:**
+
 - `TestSQLValidator` - Query validation
 - `TestSQLGenerator` - Query parsing
 - `TestSQLGuardrails` - Security checks
@@ -36,7 +39,9 @@ Run: `python run_tests.py -f test_sql_generation.py`
 - `TestSchemaIntrospector` - Schema analysis
 
 ### `tests/test_llm_module.py` (30+ tests)
+
 **LLM and prompt generation**
+
 - Prompt template creation
 - LLM inference functions
 - Edge case handling
@@ -44,12 +49,15 @@ Run: `python run_tests.py -f test_sql_generation.py`
 Run: `python run_tests.py -f test_llm_module.py`
 
 **Key Test Classes:**
+
 - `TestPromptGeneration` - Prompt templates
 - `TestLLMInference` - LLM calls
 - `TestPromptEdgeCases` - Edge cases
 
 ### `tests/test_integration.py` (15+ tests)
+
 **End-to-end workflows**
+
 - Complete pipelines
 - Error handling
 - Data validation
@@ -58,6 +66,7 @@ Run: `python run_tests.py -f test_llm_module.py`
 Run: `python run_tests.py -f test_integration.py`
 
 **Key Test Classes:**
+
 - `TestApplicationIntegration` - Full workflows
 - `TestErrorHandling` - Error scenarios
 - `TestDataValidation` - Data safety
@@ -93,24 +102,28 @@ OK
 ## 🔒 What Gets Tested
 
 ### Security ✅
+
 - SQL injection detection (UNION, comments)
 - Dangerous keyword filtering
 - Query sanitization
 - Safe mode enforcement
 
 ### Functionality ✅
+
 - Query validation
 - SQL execution
 - Schema introspection
 - Database operations
 
 ### LLM Integration ✅
+
 - Prompt generation
 - LLM response handling
 - Result analysis
 - Edge cases
 
 ### Error Handling ✅
+
 - Invalid queries
 - Malformed SQL
 - Empty results
@@ -146,6 +159,7 @@ python -m unittest tests.test_sql_generation.TestSQLValidator.test_valid_select_
 ## 🐛 Troubleshooting
 
 **Tests not found?**
+
 ```bash
 # Make sure you're in project root
 cd /Users/akshay/Workspace/sql-assistant-with-local-llm
@@ -153,6 +167,7 @@ python run_tests.py
 ```
 
 **Import errors?**
+
 ```bash
 # Ensure virtual environment is activated
 source .venv/bin/activate
@@ -160,6 +175,7 @@ python run_tests.py
 ```
 
 **Need more details?**
+
 ```bash
 # Run with verbose output
 python run_tests.py -v

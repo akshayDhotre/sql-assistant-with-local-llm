@@ -30,6 +30,7 @@ python -m evaluation.evaluate_models --models phi llama3 --output reports/
 ## Python API Quick Use
 
 ### Run Multi-Model Evaluation
+
 ```python
 from evaluation.run_eval import run_multi_model_evaluation
 from evaluation.report_generator import EvaluationReportGenerator
@@ -47,6 +48,7 @@ gen.generate_all_reports(results)
 ```
 
 ### Calculate Metrics
+
 ```python
 from evaluation.metrics import calculate_all_metrics
 
@@ -64,6 +66,7 @@ metrics = calculate_all_metrics(
 ```
 
 ### Get Summary Statistics
+
 ```python
 from evaluation.metrics import calculate_metrics_summary
 
@@ -75,7 +78,9 @@ print(f"Execution Rate: {summary['executed_pct']:.1f}%")
 ## Configuration
 
 ### Enable/Disable Models
+
 In `config.yaml`:
+
 ```yaml
 llm:
   evaluation_models:
@@ -114,6 +119,7 @@ evaluation_reports/
 ## Output File Example
 
 ### JSON Structure
+
 ```json
 {
   "all_results": {
@@ -150,6 +156,7 @@ evaluation_reports/
 ## Common Tasks
 
 ### Evaluate New Model
+
 ```yaml
 # config.yaml
 llm:
@@ -158,19 +165,23 @@ llm:
       model_id: "ollama_model_name"
       enabled: true
 ```
+
 Then: `python -m evaluation.evaluate_models`
 
 ### Compare Two Models
+
 ```bash
 python -m evaluation.evaluate_models --models phi llama3
 ```
 
 ### Save to Specific Location
+
 ```bash
 python -m evaluation.evaluate_models --output ./my_results/
 ```
 
 ### Get Best Model
+
 ```python
 from evaluation.run_eval import run_multi_model_evaluation
 
@@ -180,6 +191,7 @@ print(f"Best: {best['model']} with score {best['score']:.4f}")
 ```
 
 ### Create Custom Report
+
 ```python
 from evaluation.report_generator import EvaluationReportGenerator
 import json
@@ -234,6 +246,7 @@ gen.generate_csv_report(data, "data.csv")
 ---
 
 **Quick Support:**
+
 ```bash
 python evaluation/examples.py 1    # Run example 1
 python evaluation/examples.py 7    # View CLI examples

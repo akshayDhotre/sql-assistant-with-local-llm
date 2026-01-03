@@ -5,6 +5,7 @@ This directory contains comprehensive unit tests for the SQL Assistant with Loca
 ## Test Files Overview
 
 ### 1. **test_sql_generation.py** - Core SQL Processing Tests (60+ tests)
+
 Tests for SQL query generation, validation, and execution:
 
 - **TestSQLValidator**: Query validation and keyword checking
@@ -36,6 +37,7 @@ Tests for SQL query generation, validation, and execution:
   - Full database schema generation
 
 ### 2. **test_llm_module.py** - LLM and Prompt Tests (30+ tests)
+
 Tests for LLM interaction and prompt generation:
 
 - **TestPromptGeneration**: Prompt template creation
@@ -56,6 +58,7 @@ Tests for LLM interaction and prompt generation:
   - NULL values
 
 ### 3. **test_integration.py** - End-to-End Integration Tests (15+ tests)
+
 High-level integration and error handling tests:
 
 - **TestApplicationIntegration**: Full workflow testing
@@ -81,11 +84,13 @@ High-level integration and error handling tests:
 ## Running Tests
 
 ### Run All Tests
+
 ```bash
 python -m unittest discover tests -v
 ```
 
 ### Run Specific Test File
+
 ```bash
 python -m unittest tests.test_sql_generation -v
 python -m unittest tests.test_llm_module -v
@@ -93,11 +98,13 @@ python -m unittest tests.test_integration -v
 ```
 
 ### Run Specific Test Class
+
 ```bash
 python -m unittest tests.test_sql_generation.TestSQLValidator -v
 ```
 
 ### Run Specific Test Method
+
 ```bash
 python -m unittest tests.test_sql_generation.TestSQLValidator.test_valid_select_query -v
 ```
@@ -123,24 +130,28 @@ python -m unittest tests.test_sql_generation.TestSQLValidator.test_valid_select_
 ## Key Testing Areas
 
 ### Security Testing
+
 - ✅ SQL Injection detection (UNION-based, comment-based)
 - ✅ Dangerous keyword filtering
 - ✅ Multiple statement prevention
 - ✅ Query sanitization
 
 ### Functionality Testing
+
 - ✅ Query validation and execution
 - ✅ Schema introspection
 - ✅ Database operations
 - ✅ Complex queries (JOINs, aggregations)
 
 ### Prompt & LLM Testing
+
 - ✅ Prompt generation with various inputs
 - ✅ LLM response handling
 - ✅ Result analysis and summarization
 - ✅ Edge case handling
 
 ### Integration Testing
+
 - ✅ End-to-end workflows
 - ✅ Error handling and recovery
 - ✅ Data validation pipelines
@@ -148,16 +159,21 @@ python -m unittest tests.test_sql_generation.TestSQLValidator.test_valid_select_
 ## Test Features
 
 ### Temporary Database Creation
+
 Tests use `tempfile.NamedTemporaryFile` to create isolated test databases without affecting the main application database.
 
 ### Mock Objects
+
 Uses Python's `unittest.mock` for:
+
 - LLM model simulation
 - Function call verification
 - Response generation
 
 ### Comprehensive Assertions
+
 Each test includes multiple assertions to verify:
+
 - Return value correctness
 - Side effects
 - Error messages
@@ -190,6 +206,7 @@ class TestNewFeature(unittest.TestCase):
 ## Continuous Testing
 
 To run tests automatically during development:
+
 ```bash
 # Watch for changes and run tests (requires pytest-watch)
 ptw tests/
@@ -207,6 +224,7 @@ python -m unittest discover tests -v
 ## Contributing
 
 When making changes to the codebase:
+
 1. Run all tests to ensure no regressions
 2. Add new tests for new functionality
 3. Update this README if adding new test files or categories

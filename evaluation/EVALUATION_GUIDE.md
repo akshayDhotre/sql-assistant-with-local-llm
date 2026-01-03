@@ -71,6 +71,7 @@ print_model_comparison(comparison)
 #### Result Structure
 
 Each evaluation result includes:
+
 - Query generation and validation results
 - Execution success/failure
 - All similarity metrics
@@ -248,18 +249,21 @@ Create additional datasets for specific domains or query types.
 ## Understanding Metrics
 
 ### Exact Match (0.0 - 1.0)
+
 - **1.0**: Generated query is identical to expected (after normalization)
 - **0.0**: Queries differ
 
 **Use case**: Strict correctness checking
 
 ### Token Match (0.0 - 1.0)
+
 - **1.0**: All expected tokens present in generated query
 - **0.0**: No matching tokens
 
 **Use case**: Identifying missing components
 
 ### BLEU Score (0.0 - 1.0)
+
 - **1.0**: Perfect n-gram overlap
 - **0.5**: ~50% n-gram overlap
 - **0.0**: No n-gram overlap
@@ -267,6 +271,7 @@ Create additional datasets for specific domains or query types.
 **Use case**: Evaluating phrase-level similarity
 
 ### F1 Score (0.0 - 1.0)
+
 - **1.0**: Perfect precision and recall
 - **0.5**: Balanced but incomplete match
 - **0.0**: No overlap
@@ -274,6 +279,7 @@ Create additional datasets for specific domains or query types.
 **Use case**: Balanced evaluation of coverage vs correctness
 
 ### Semantic Similarity (0.0 - 1.0)
+
 - **1.0**: Same SQL keywords and operations
 - **0.5**: Partial keyword overlap
 - **0.0**: Different operations
@@ -281,11 +287,13 @@ Create additional datasets for specific domains or query types.
 **Use case**: Structural correctness despite syntax differences
 
 ### Composite Score
+
 Weighted average of all metrics (default: equal weights).
 
 ## Report Examples
 
 ### Summary Statistics
+
 ```
 Total tests: 20
 Valid queries: 18/20 (90.0%)
@@ -294,6 +302,7 @@ Errors: 2 (10.0%)
 ```
 
 ### Model Comparison
+
 ```
 Best Composite Score: llama3 (0.8234)
 Best Execution Rate: phi (95.0%)
@@ -301,6 +310,7 @@ Best Validity Rate: mistral (92.5%)
 ```
 
 ### Detailed Metrics
+
 ```
 Model: llama3
 - Exact Match: 0.4500
@@ -314,6 +324,7 @@ Model: llama3
 ## Performance Metrics
 
 Each evaluation result includes:
+
 - `generation_time_sec` - Time to generate SQL (seconds)
 - `execution_time_sec` - Time to execute query (seconds)
 - `result_rows` - Number of rows returned
@@ -323,18 +334,22 @@ Use these to monitor model efficiency.
 ## Troubleshooting
 
 ### No models enabled
+
 **Error**: "No models configured for evaluation"  
 **Solution**: Set `enabled: true` in config.yaml for at least one model
 
 ### Database connection failed
+
 **Error**: "Could not retrieve schema"  
 **Solution**: Verify database path in config.yaml and that database file exists
 
 ### Model not found
+
 **Error**: "Model not found in Ollama"  
 **Solution**: Pull the model first: `ollama pull <model_name>`
 
 ### Out of memory
+
 **Error**: "CUDA out of memory" or similar  
 **Solution**: Use smaller models or reduce batch size
 
