@@ -100,10 +100,9 @@ def generate_result_prompt(columns: List[str], rows: List[tuple], question: str)
     Data (first {min(num_rows, 10)} rows):
     {sample_data}
 
-    Provide concise insights:
+    Provide concise insights on:
     1. Key findings/patterns (2-3 sentences)
     2. Notable observations
-    3. Brief summary
 
     Response should be well formatted and pointwise to show on UI
     Be direct and avoid obvious statements."""
