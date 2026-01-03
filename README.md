@@ -6,6 +6,8 @@ A **secure, modular, and evaluation-driven Text-to-SQL assistant** that converts
 
 This project goes beyond a demo chatbot and focuses on **real-world concerns** like SQL safety, schema awareness, observability, evaluation, and reproducibility.
 
+![Demo GIF](UI_demo.gif)
+
 ## Key Features
 
 ### SQL Safety & Guardrails
